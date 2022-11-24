@@ -2,45 +2,39 @@ package main
 
 import (
 	"fmt"
+	"sync"
 	"time"
 )
 
 func main() {
+	var waitgroup sync.WaitGroup
 
 	startTime := time.Now()
-	fmt.Println(startTime)
+	waitgroup.Add(3)
 
-	fmt.Println("Prime numbers from a range are:")
-	PrimeNumbersRange(3, 100)
-
+	go PrimeNumbersRange(3, 40, &waitgroup)
+	go PrimeNumbersRange(41, 70, &waitgroup)
+	go PrimeNumbersRange(71, 100, &waitgroup)
+	waitgroup.Wait()
 	endTime := time.Now()
 
-	timeDuration := endTime.Sub(startTime)
+	timeDuration := endTime.Sub(startTime).Seconds()
 	fmt.Println(timeDuration)
 
-	generated := SumOfPrime(100)
-	sum := 0
-	for _, val := range generated {
-		sum += val
-	}
-	fmt.Printf("Sum of prime number 1 - 100:  %v \n", sum)
 }
 
-func PrimeNumbersRange(num1, num2 int) *int {
+func PrimeNumbersRange(num1, num2 int, waitgroup *sync.WaitGroup) *int {
+	defer waitgroup.Done()
+	sum := 0
+	count := 0
 	if num1 < 2 || num2 < 2 {
-
 		fmt.Println(" Numbers greater than 2")
 		return nil
 	}
 
-	var count int
 	for num1 <= num2 {
 		IsPrime := true
-
-		for i := 2; i <= 2; i++ {
-			if IsPrime == true {
-				count++
-			}
+		for i := 2; i <= num1/2; i++ {
 			if num1%i == 0 {
 				IsPrime = false
 				break
@@ -48,34 +42,13 @@ func PrimeNumbersRange(num1, num2 int) *int {
 		}
 		if IsPrime {
 			fmt.Printf("%d ", num1)
+			sum = sum + num1
+			count++
 		}
 		num1++
 	}
-	return &count
-}
-func SumOfPrime(n int) []int {
 
-	integers := make([]bool, n+1)
-
-	for i := 2; i < n+1; i++ {
-		integers[i] = true
-	}
-
-	for p := 2; p*p <= n; p++ {
-		if integers[p] == true {
-
-			for i := p * 2; i <= n; i += p {
-				integers[i] = false
-			}
-		}
-	}
-
-	var primes []int
-	for p := 2; p <= n; p++ {
-		if integers[p] == true {
-			primes = append(primes, p)
-		}
-	}
-
-	return primes
+	fmt.Println("\nsum", sum)
+	fmt.Println("count", count)
+	return nil
 }
