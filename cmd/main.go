@@ -7,20 +7,30 @@ import (
 )
 
 func main() {
-	var waitgroup sync.WaitGroup
-
 	startTime := time.Now()
-	waitgroup.Add(3)
 
-	go PrimeNumbersRange(3, 40, &waitgroup)
-	go PrimeNumbersRange(41, 70, &waitgroup)
-	go PrimeNumbersRange(71, 100, &waitgroup)
-	waitgroup.Wait()
+	wait()
 	endTime := time.Now()
 
 	timeDuration := endTime.Sub(startTime).Seconds()
 	fmt.Println(timeDuration)
 
+}
+func wait() {
+	var wg sync.WaitGroup
+	routines := 10
+	dataSize := 1000
+	chunk := dataSize / routines
+	start := 0
+	end := 0
+	for i := 0; i < routines; i++ {
+		start = end
+		end = start + chunk
+		wg.Add(1)
+		fmt.Printf("%v -> %v\n", start, end)
+		go PrimeNumbersRange(start, end, &wg)
+	}
+	wg.Wait()
 }
 
 func PrimeNumbersRange(num1, num2 int, waitgroup *sync.WaitGroup) *int {
@@ -47,7 +57,6 @@ func PrimeNumbersRange(num1, num2 int, waitgroup *sync.WaitGroup) *int {
 		}
 		num1++
 	}
-
 	fmt.Println("\nsum", sum)
 	fmt.Println("count", count)
 	return nil
